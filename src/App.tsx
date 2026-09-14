@@ -9,7 +9,8 @@ import { StoryIntroModal } from './components/StoryIntroModal';
 import { EventModal } from './components/EventModal';
 import { VictoryModal } from './components/VictoryModal';
 import { TeacherSettingsModal } from './components/TeacherSettingsModal';
-import { Settings, Sparkles, BookOpen } from 'lucide-react';
+import { Settings, Sparkles, BookOpen, Download } from 'lucide-react';
+import { generateStandaloneHtml } from './utils/standaloneExporter';
 
 const TRACK_TILES: TrackTile[] = [
   { index: 0, type: 'start', label: '출발', badge: '출발지점' },
@@ -310,6 +311,20 @@ export default function App() {
     setIsOrderModalOpen(true);
   };
 
+  // 단독 실행용 받침게임.html 파일 다운로드
+  const handleDownloadGameHtml = () => {
+    const htmlContent = generateStandaloneHtml();
+    const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = '받침게임.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   useEffect(() => {
     return () => {
       if (moveIntervalRef.current) {
@@ -430,6 +445,21 @@ export default function App() {
             <Settings className="w-4 h-4 text-blue-600" />
             <span>교사용 설정</span>
           </button>
+
+          {/* 받침게임.html 다운로드 링크 */}
+          <a
+            href="/받침게임.html"
+            download="받침게임.html"
+            onClick={(e) => {
+              handleDownloadGameHtml();
+              e.preventDefault();
+            }}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-black shadow-xs transition-all cursor-pointer no-underline"
+            title="내 브라우저에서 바로 내려받는 단독 실행용 받침게임.html"
+          >
+            <Download className="w-3.5 h-3.5 text-white" />
+            <span>받침게임.html 다운로드</span>
+          </a>
         </div>
       </header>
 

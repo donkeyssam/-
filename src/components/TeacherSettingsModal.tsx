@@ -39,7 +39,7 @@ export const TeacherSettingsModal: React.FC<TeacherSettingsModalProps> = ({
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = '받침소리를구하자_교실용_단일파일.html';
+    a.download = '받침게임.html';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
