@@ -3,7 +3,6 @@ import { WordMission, GameMode, Player } from '../types';
 import { SvgIllustration } from '../data/vocabulary';
 import { soundManager, composeSyllable } from '../utils/audio';
 import { Volume2, Lightbulb, Sparkles, CheckCircle2, RotateCcw, ArrowRight } from 'lucide-react';
-import { sendLogToGoogleSheet } from '../utils/googleSheetsLogger';
 
 interface MissionModalProps {
   isOpen: boolean;
@@ -46,7 +45,6 @@ export const MissionModal: React.FC<MissionModalProps> = ({
 
   // 힌트 가시성 상태 (사용자 요청: 바로 보이지 않고 버튼 클릭 시 확인)
   const [showHintText, setShowHintText] = useState<boolean>(false);
-  const attemptCounterRef = useRef<number>(0);
 
   // 단어 음절 분해
   const syllables = mission ? mission.word.split('') : [];
@@ -66,7 +64,6 @@ export const MissionModal: React.FC<MissionModalProps> = ({
       setActiveChantSyllable(null);
       setCountdown(null);
       setClapCount(0);
-      attemptCounterRef.current = 0;
       hasTriggeredSuccess.current = false;
       clearChantTimers();
 
@@ -141,22 +138,7 @@ export const MissionModal: React.FC<MissionModalProps> = ({
   const handleSelectChoice = (ch: string) => {
     if (isSuccess || hasTriggeredSuccess.current) return;
 
-    attemptCounterRef.current += 1;
-    const isCorrect = (ch === mission.final);
-
-    // 구글 시트로 학습 데이터 실시간 전송
-    const logData = {
-      studentName: activePlayer.name,
-      word: mission.word,
-      correctFinal: mission.final,
-      selectedFinal: ch,
-      isCorrect: isCorrect,
-      mode: mode,
-      attemptCount: attemptCounterRef.current
-    };
-    sendLogToGoogleSheet(logData);
-
-    if (isCorrect) {
+    if (ch === mission.final) {
       // 정답 맞춤
       setSelectedFinal(ch);
       setIsSuccess(true);

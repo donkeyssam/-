@@ -1713,31 +1713,8 @@ export function generateStandaloneHtml(): string {
     }
   }
 
-  // 1. 발급받은 Apps Script 웹 앱 URL
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxezq-FkgboCi3Gg_odb8lk_JM7x0hBsGyjccTrhcVgRKGl_VFNK7SOWMSp9dBp9kCm-w/exec";
-
-  // 2. 구글 시트 전송 함수 정의
-  function sendLogToGoogleSheet(logData) {
-    try {
-      fetch(SCRIPT_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "text/plain;charset=utf-8"
-        },
-        body: JSON.stringify(logData)
-      })
-      .then(response => console.log("[Google Sheet] 기록 완료:", logData))
-      .catch(error => console.error("[Google Sheet] 기록 실패:", error));
-    } catch (error) {
-      console.error("[Google Sheet] 전송 오류:", error);
-    }
-  }
-
-  let attemptCounter = 0;
-
   /* 미션 팝업 열기 & [나] 모드 점선 테두리 색상 깜빡임 적용 */
   function openMissionModal(type) {
-    attemptCounter = 0;
     const pool = VOCAB_DATABASE[type];
     currentMission = pool[Math.floor(Math.random() * pool.length)];
 
@@ -1846,27 +1823,9 @@ export function generateStandaloneHtml(): string {
 
   function verifyAnswer(selectedFinal, clickedBtn) {
     if (isMissionSolved) return;
-
-    attemptCounter++;
-    const isCorrect = (selectedFinal === currentMission.final);
-
-    // 구글 시트로 전송할 학습 데이터 객체 구성
-    const logData = {
-      studentName: players[turnIndex] ? players[turnIndex].name : '',
-      word: currentMission.word,
-      correctFinal: currentMission.final,
-      selectedFinal: selectedFinal,
-      isCorrect: isCorrect,
-      mode: currentMode,
-      attemptCount: attemptCounter
-    };
-
-    // 백그라운드로 구글 시트에 전송
-    sendLogToGoogleSheet(logData);
-
     const feedback = document.getElementById('feedback-text');
 
-    if (isCorrect) {
+    if (selectedFinal === currentMission.final) {
       isMissionSolved = true;
       playSound('correct');
       document.getElementById('final-slot').textContent = selectedFinal;
