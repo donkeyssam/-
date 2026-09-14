@@ -979,6 +979,42 @@
   </div>
 </div>
 
+<!-- 도착 확인 팝업 (문제를 확인해볼까요?) -->
+<div class="modal-overlay" id="arrival-prompt-modal" style="display: none;">
+  <div class="modal-card" style="max-width: 440px; text-align: center; border: 4px solid #cbd5e1;">
+    <div id="arrival-player-tag" style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 999px; background: #f1f5f9; border: 1px solid #e2e8f0; margin-bottom: 12px; font-weight: 900; font-size: 0.95rem; color: #1e293b;">
+      <span id="arrival-player-avatar">🐶</span>
+      <span id="arrival-player-name">선아</span> 학생 차례
+      <span style="font-size: 0.75rem; background: #dbeafe; color: #1d4ed8; padding: 2px 8px; border-radius: 999px;">도착!</span>
+    </div>
+
+    <div id="arrival-category-icon" style="width: 80px; height: 80px; margin: 0 auto 12px; border-radius: 24px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; background: #fff1f2; border: 2px solid #fecdd3;">
+      👄
+    </div>
+
+    <h2 id="arrival-tile-title" style="font-size: 1.5rem; font-weight: 900; color: #1e293b; margin-bottom: 4px;">
+      입술 소리 칸
+    </h2>
+    <p id="arrival-tile-sub" style="font-size: 0.8rem; font-weight: 700; color: #64748b; margin-bottom: 16px;">
+      두 입술이 꼭 닿았다 떨어지는 소리 (ㅁ, ㅂ)
+    </p>
+
+    <div id="arrival-card-box" style="padding: 14px; border-radius: 16px; background: #f8fafc; border: 1px solid #e2e8f0; margin-bottom: 20px;">
+      <p style="font-size: 1.05rem; font-weight: 900; color: #1e293b;">어떤 받침 소리가 숨어 있을까요? 🤔</p>
+      <p style="font-size: 0.8rem; font-weight: 600; color: #475569; margin-top: 4px;">준비가 되면 아래 버튼을 눌러 문제를 확인해 보세요!</p>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
+      <button class="btn-action" id="btn-start-arrival-mission" style="background: #2563eb; padding: 14px; font-size: 1.15rem; font-weight: 900;" onclick="confirmArrivalAndStartMission()">
+        문제를 확인해 볼까요? 🚀
+      </button>
+      <button type="button" style="padding: 8px 12px; border-radius: 10px; background: #f1f5f9; border: none; color: #475569; font-size: 0.8rem; font-weight: 700; cursor: pointer;" onclick="speakArrivalPrompt()">
+        🔊 음성 안내 다시 듣기
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- 받침 구출 미션 팝업 -->
 <div class="modal-overlay" id="mission-modal" style="display: none;">
   <div class="modal-card">
@@ -1666,6 +1702,8 @@
     }, moveSpeedMs);
   }
 
+  let pendingArrivalTile = null;
+
   function handleTileArrival(pos) {
     const tile = TRACK_TILES[pos];
     if (tile.type === 'event') {
@@ -1673,8 +1711,61 @@
     } else if (tile.type === 'start') {
       passTurn();
     } else {
-      openMissionModal(tile.type);
+      showArrivalPromptModal(tile);
     }
+  }
+
+  function showArrivalPromptModal(tile) {
+    pendingArrivalTile = tile;
+    const player = players[turnIndex];
+
+    document.getElementById('arrival-player-avatar').textContent = player.icon;
+    document.getElementById('arrival-player-name').textContent = player.name;
+
+    const iconBox = document.getElementById('arrival-category-icon');
+    const titleEl = document.getElementById('arrival-tile-title');
+    const subEl = document.getElementById('arrival-tile-sub');
+    const startBtn = document.getElementById('btn-start-arrival-mission');
+
+    if (tile.type === 'lip') {
+      iconBox.textContent = '👄';
+      iconBox.style.background = '#fff1f2';
+      iconBox.style.borderColor = '#fecdd3';
+      titleEl.textContent = '입술 소리 칸';
+      subEl.textContent = '두 입술이 꼭 닿았다 떨어지는 소리 (ㅁ, ㅂ)';
+      startBtn.style.background = '#e11d48';
+    } else if (tile.type === 'tongue') {
+      iconBox.textContent = '👅';
+      iconBox.style.background = '#ecfdf5';
+      iconBox.style.borderColor = '#a7f3d0';
+      titleEl.textContent = '혀끝 소리 칸';
+      subEl.textContent = '혀끝이 윗잇몸에 닿았다 떨어지는 소리 (ㄴ, ㄷ, ㄹ)';
+      startBtn.style.background = '#059669';
+    } else {
+      iconBox.textContent = '🗣️';
+      iconBox.style.background = '#f0f9ff';
+      iconBox.style.borderColor = '#bae6fd';
+      titleEl.textContent = '목구멍 소리 칸';
+      subEl.textContent = '목구멍과 혀 뒤쪽에서 울려 나오는 소리 (ㅇ, ㄱ)';
+      startBtn.style.background = '#2563eb';
+    }
+
+    speakArrivalPrompt();
+    document.getElementById('arrival-prompt-modal').style.display = 'flex';
+  }
+
+  function speakArrivalPrompt() {
+    if (!pendingArrivalTile) return;
+    const player = players[turnIndex];
+    speakWord(`${player.name} 학생, ${pendingArrivalTile.label} 칸에 도착했어요! 문제를 확인해 볼까요?`);
+  }
+
+  function confirmArrivalAndStartMission() {
+    if (!pendingArrivalTile) return;
+    playSound('step');
+    document.getElementById('arrival-prompt-modal').style.display = 'none';
+    openMissionModal(pendingArrivalTile.type);
+    pendingArrivalTile = null;
   }
 
   function handleEventTile(tile) {

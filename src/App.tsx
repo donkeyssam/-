@@ -9,6 +9,7 @@ import { StoryIntroModal } from './components/StoryIntroModal';
 import { EventModal } from './components/EventModal';
 import { VictoryModal } from './components/VictoryModal';
 import { TeacherSettingsModal } from './components/TeacherSettingsModal';
+import { MissionArrivalModal } from './components/MissionArrivalModal';
 import { Settings, Sparkles, BookOpen, Download } from 'lucide-react';
 import { generateStandaloneHtml } from './utils/standaloneExporter';
 
@@ -74,6 +75,8 @@ export default function App() {
   const [isTeacherModalOpen, setIsTeacherModalOpen] = useState<boolean>(false);
   const [currentMission, setCurrentMission] = useState<WordMission | null>(null);
   const [isMissionModalOpen, setIsMissionModalOpen] = useState<boolean>(false);
+  // 도착 후 문제 확인 전 대기 상태 (문제를 확인해볼까요?)
+  const [arrivalPendingTile, setArrivalPendingTile] = useState<TrackTile | null>(null);
   const [currentEvent, setCurrentEvent] = useState<{ title: string; desc: string; type: string } | null>(null);
   const [winner, setWinner] = useState<Player | null>(null);
 
@@ -170,17 +173,26 @@ export default function App() {
     } else if (tile.type === 'start') {
       passTurn();
     } else {
-      // 조음 위치별 미션 열기
+      // 조음 위치별 칸 도착 시 바로 문제를 띄우지 않고 "문제를 확인해볼까요?" 확인 모달 표시
       const pool = VOCABULARY_LIST.filter((v) => v.category === tile.type);
       if (pool.length > 0) {
         const randomMission = pool[Math.floor(Math.random() * pool.length)];
         setCurrentMission(randomMission);
-        setIsMissionModalOpen(true);
+        setArrivalPendingTile(tile);
+        const currentPlayer = players[activePlayerIndex];
+        soundManager.speak(`${currentPlayer.name} 학생, ${tile.label} 칸에 도착했어요! 문제를 확인해 볼까요?`);
       } else {
         passTurn();
       }
     }
-  }, [passTurn]);
+  }, [passTurn, players, activePlayerIndex]);
+
+  // "문제를 확인해 볼까요?" 클릭 시 본격 문제 풀이 모달로 전환
+  const handleStartMission = () => {
+    soundManager.playSound('step');
+    setArrivalPendingTile(null);
+    setIsMissionModalOpen(true);
+  };
 
   // 주사위 이동
   const movePlayerSteps = useCallback((steps: number) => {
@@ -488,6 +500,14 @@ export default function App() {
         onShuffle={handleShuffleOrder}
         onConfirm={handleConfirmOrder}
         onUpdateAvatar={handleUpdatePlayerAvatar}
+      />
+
+      {/* 도착 후 확인 단계: 문제를 확인해 볼까요? */}
+      <MissionArrivalModal
+        isOpen={Boolean(arrivalPendingTile)}
+        player={players[activePlayerIndex]}
+        tile={arrivalPendingTile}
+        onStartMission={handleStartMission}
       />
 
       <MissionModal
