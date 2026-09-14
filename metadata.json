@@ -1,0 +1,6 @@
+{
+  "name": "받침 소리를 구하자!",
+  "description": "특수교육 대상 학생을 위한 조음 위치별 받침 학습 인터랙티브 보드게임 (교실 전자칠판 및 태블릿 최적화)",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

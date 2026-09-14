@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+@layer utilities {
+  /* [나] 촉구 모드: 목표 받침 위치(비어 있는 네모 박스)의 점선 테두리 색상 깜빡임 애니메이션 */
+  .prompt-dashed-blink {
+    animation: promptDashedBlink 1.4s ease-in-out infinite;
+  }
+
+  /* 선택지 반짝임 촉구 애니메이션 */
+  .prompt-choice-glow {
+    animation: promptChoiceGlow 1.2s alternate infinite ease-in-out;
+  }
+}
+
+@keyframes promptDashedBlink {
+  0% {
+    border-color: #3182ce;
+    background-color: #ebf8ff;
+    box-shadow: 0 0 0 4px rgba(49, 130, 206, 0.3), inset 0 0 10px rgba(49, 130, 206, 0.15);
+  }
+  33% {
+    border-color: #ed8936;
+    background-color: #fffaf0;
+    box-shadow: 0 0 0 5px rgba(237, 137, 54, 0.4), inset 0 0 12px rgba(237, 137, 54, 0.2);
+  }
+  66% {
+    border-color: #e53e3e;
+    background-color: #fff5f5;
+    box-shadow: 0 0 0 5px rgba(229, 62, 62, 0.35), inset 0 0 12px rgba(229, 62, 62, 0.2);
+  }
+  100% {
+    border-color: #3182ce;
+    background-color: #ebf8ff;
+    box-shadow: 0 0 0 4px rgba(49, 130, 206, 0.3), inset 0 0 10px rgba(49, 130, 206, 0.15);
+  }
+}
+
+@keyframes promptChoiceGlow {
+  0% {
+    box-shadow: 0 0 6px rgba(99, 179, 237, 0.8);
+    background-color: #ebf8ff;
+    border-color: #3182ce;
+    transform: scale(1);
+  }
+  100% {
+    box-shadow: 0 0 20px rgba(49, 130, 206, 0.9), 0 0 35px rgba(66, 153, 225, 0.5);
+    background-color: #bee3f8;
+    border-color: #2b6cb0;
+    transform: scale(1.06);
+  }
+}
+
+@keyframes diceRollAnim {
+  0% { transform: rotate(0deg) scale(0.95); }
+  50% { transform: rotate(180deg) scale(1.1); }
+  100% { transform: rotate(360deg) scale(0.95); }
+}
+
+.dice-rolling {
+  animation: diceRollAnim 0.5s infinite linear;
+}
